@@ -34,7 +34,7 @@ class Node:
         return packets_sent
 
 
-class TDMA:
+class DTDMA:
     def __init__(self, num_nodes, total_time, packet_send_rate):
         self.num_nodes = num_nodes
         self.total_time = total_time
@@ -116,13 +116,13 @@ if __name__ == "__main__":
     num_nodes = 10
     total_time = 10  # seconds
     packet_send_rate = 2  # packets per second
-    tdma_system = TDMA(num_nodes, total_time, packet_send_rate)
+    dtdma_system = DTDMA(num_nodes, total_time, packet_send_rate)
 
     # Add packets to nodes
     for node_id in range(num_nodes):
         if node_id % 2 == 0:
             for i in range(1, 11):
-                tdma_system.add_packet_to_node(node_id, f"Packet {i}")
+                dtdma_system.add_packet_to_node(node_id, f"Packet {i}")
         # else:
         #     for i in range(1, 3):
         #         tdma_system.add_packet_to_node(node_id, f"Packet {i}")
@@ -130,9 +130,9 @@ if __name__ == "__main__":
     # Simulate TDMA
 
     # while tdma_system.total_packets >= 0:
-    tdma_system.simulate()
-    for node in tdma_system.nodes:
+    dtdma_system.simulate()
+    for node in dtdma_system.nodes:
         print(node.node_id, node.packet_list)
-    print(tdma_system.total_packets)
-    efficiency = tdma_system.total_packets / total_time
-    tdma_system.draw()
+    print(dtdma_system.total_packets)
+    efficiency = dtdma_system.total_packets / total_time
+    dtdma_system.draw()
