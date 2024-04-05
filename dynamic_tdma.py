@@ -24,6 +24,7 @@ class Node:
                 print(f"Node {self.node_id} sent packet: {packet}")
                 packets_sent += 1
                 tdma.cumulative_packets_count(current_time, 1)
+                # tdma.total_packets -= 1
             else:
                 print("Idle")
                 tdma.cumulative_packets_count(current_time, 0)
@@ -41,6 +42,7 @@ class TDMA:
         self.time_slot_duration = total_time / num_nodes
         # self.time_slot_duration = []
         self.nodes = [Node(node_id, packet_send_rate) for node_id in range(num_nodes)]
+        self.total_packets = 0
         self.current_slot = 0
         self.start_time = 0
         self.end_time = 0
@@ -49,12 +51,13 @@ class TDMA:
         self.elapsed_time = []
         self.time_zero = time.time()
         self.packet_buffer = []  # for counting how many packets in each node
+        self.time_slot_durations = []
 
     def add_packet_to_node(self, node_id, packet):
         self.nodes[node_id].add_packet(packet)
 
-    def cumulative_packets_count(self, time, packets):
-        self.cumulative_packets += packets
+    def cumulative_packets_count(self, time, amount_packet_send):
+        self.cumulative_packets += amount_packet_send
         self.cumulative_packet_send.append(self.cumulative_packets)
         self.elapsed_time.append(time - self.time_zero)
 
@@ -67,6 +70,9 @@ class TDMA:
         plt.show()
 
     def scheduler(self):
+        self.total_packets = sum(len(node.packet_list) for node in self.nodes)
+        print("total packets" + str(self.total_packets))
+
         for node in self.nodes:
             # A node has nothing to send
             if len(node.packet_list) == 0:
@@ -74,31 +80,41 @@ class TDMA:
                 self.num_nodes -= 1
             else:
                 # count how many packets in each node, and split time frame accrdingly
-                self.packet_buffer.append((node.node_id, len(node.packet_list)))
-                print(node)
-        pass
+                self.packet_buffer.append((node, len(node.packet_list)))
+
+        for node in self.nodes:
+            self.time_slot_durations.append(
+                (
+                    node,
+                    min(
+                        (len(node.packet_list) / self.total_packets) * total_time,
+                        self.packet_send_rate * len(node.packet_list),
+                    ),
+                )
+            )
+        print(self.time_slot_durations)
 
     def simulate(self):
 
         self.scheduler()
-        self.start_time = time.time()
-        while self.current_slot < self.num_nodes:
+        slot_start_time = time.time()
+        for slot in self.time_slot_durations:
+            node = slot[0]
+            duration = slot[1]
 
-            slot_start_time = (
-                self.start_time + self.current_slot * self.time_slot_duration
-            )
-            slot_end_time = slot_start_time + self.time_slot_duration
-            print(f"Time Slot {self.current_slot}:")
+            slot_end_time = slot_start_time + duration
+            print(f"Time Slot {self.current_slot} duration is: {duration}")
+            print(slot_end_time)
             # Get the node for the current time slot
-            node_id = self.current_slot % self.num_nodes
-            packets_sent = self.nodes[node_id].send_packets(self, slot_end_time)
-            print(f"Node {node_id} sent {packets_sent} packet(s) in this slot.")
+            packets_sent = node.send_packets(self, slot_end_time)
+            print(f"Node {node.node_id} sent {packets_sent} packet(s) in this slot.")
             self.current_slot += 1
+            slot_start_time = slot_end_time
 
 
 if __name__ == "__main__":
-    num_nodes = 3
-    total_time = 18  # seconds
+    num_nodes = 10
+    total_time = 10  # seconds
     packet_send_rate = 2  # packets per second
     tdma_system = TDMA(num_nodes, total_time, packet_send_rate)
 
@@ -112,5 +128,11 @@ if __name__ == "__main__":
         #         tdma_system.add_packet_to_node(node_id, f"Packet {i}")
 
     # Simulate TDMA
+
+    # while tdma_system.total_packets >= 0:
     tdma_system.simulate()
+    for node in tdma_system.nodes:
+        print(node.node_id, node.packet_list)
+    print(tdma_system.total_packets)
+    efficiency = tdma_system.total_packets / total_time
     tdma_system.draw()

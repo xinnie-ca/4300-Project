@@ -62,6 +62,7 @@ class TDMA:
         plt.show()
 
     def simulate(self):
+        self.total_packets = sum(len(node.packet_list) for node in self.nodes)
         self.start_time = time.time()
         while self.current_slot < self.num_nodes:
             slot_start_time = (
@@ -77,8 +78,8 @@ class TDMA:
 
 
 if __name__ == "__main__":
-    num_nodes = 3
-    total_time = 18  # seconds
+    num_nodes = 10
+    total_time = 10  # seconds
     packet_send_rate = 2  # packets per second
     tdma_system = TDMA(num_nodes, total_time, packet_send_rate)
 
@@ -93,4 +94,5 @@ if __name__ == "__main__":
 
     # Simulate TDMA
     tdma_system.simulate()
+    efficiency = tdma_system.total_packets / total_time
     tdma_system.draw()
