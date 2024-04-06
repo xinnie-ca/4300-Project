@@ -96,14 +96,19 @@ class DTDMA:
 
         for node in self.nodes:
 
+            duration = 0
+            if self.total_packets != 0:
+                duration = (len(node.packet_list) / self.total_packets) * total_time
+
             self.time_slot_durations.append(
                 (
                     node,
-                    min(
-                        (len(node.packet_list) / self.total_packets) * total_time,
-                        # self.packet_send_rate * len(node.packet_list),
-                        len(node.packet_list) / self.packet_send_rate,
-                    ),
+                    duration,
+                    # min(
+                    #     (len(node.packet_list) / self.total_packets) * total_time,
+                    #     # self.packet_send_rate * len(node.packet_list),
+                    #     len(node.packet_list) / self.packet_send_rate,
+                    # ),
                 )
             )
         # print(self.nodes)
@@ -170,14 +175,13 @@ class FDMA:
         self.nodes_id = [node_id for node_id in range(num_nodes)]
 
         num_nodes_per_channel = int(num_nodes / num_channels)
-        print(self.nodes_id)
+        # print(self.nodes_id)
         for _ in range(num_channels):
             node_ids_per_channel = []
             for i in range(num_nodes_per_channel):
                 if len(self.nodes_id) < num_nodes_per_channel:
                     node_ids_per_channel = [id for id in self.nodes_id]
                     break
-                print(i)
                 node_ids_per_channel.append(self.nodes_id[i])
                 self.nodes_id.remove(self.nodes_id[i])
 
