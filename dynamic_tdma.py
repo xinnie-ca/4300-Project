@@ -52,6 +52,7 @@ class DTDMA:
         self.time_zero = time.time()
         self.packet_buffer = []  # for counting how many packets in each node
         self.time_slot_durations = []
+        self.packet_send = 0
 
     def add_packet_to_node(self, node_id, packet):
         self.nodes[node_id].add_packet(packet)
@@ -86,10 +87,12 @@ class DTDMA:
             self.time_slot_durations.append(
                 (
                     node,
-                    min(
-                        (len(node.packet_list) / self.total_packets) * total_time,
-                        self.packet_send_rate * len(node.packet_list),
-                    ),
+                    (len(node.packet_list) / self.total_packets) * total_time,
+                    # min(
+                    # (len(node.packet_list) / self.total_packets) * total_time,
+                    # self.packet_send_rate * len(node.packet_list),
+                    # len(node.packet_list) / self.packet_send_rate,
+                    # ),
                 )
             )
         print(self.time_slot_durations)
@@ -106,33 +109,40 @@ class DTDMA:
             print(f"Time Slot {self.current_slot} duration is: {duration}")
             print(slot_end_time)
             # Get the node for the current time slot
-            packets_sent = node.send_packets(self, slot_end_time)
-            print(f"Node {node.node_id} sent {packets_sent} packet(s) in this slot.")
+            self.packet_send += node.send_packets(self, slot_end_time)
+            print(
+                f"Node {node.node_id} sent {self.packet_send} packet(s) in this slot."
+            )
             self.current_slot += 1
             slot_start_time = slot_end_time
 
 
 if __name__ == "__main__":
-    num_nodes = 10
+    num_nodes = 1000
     total_time = 10  # seconds
-    packet_send_rate = 2  # packets per second
+    packet_send_rate = 200  # packets per second
     dtdma_system = DTDMA(num_nodes, total_time, packet_send_rate)
 
     # Add packets to nodes
     for node_id in range(num_nodes):
         if node_id % 2 == 0:
-            for i in range(1, 11):
+            for i in range(1, 1000):
                 dtdma_system.add_packet_to_node(node_id, f"Packet {i}")
         # else:
-        #     for i in range(1, 3):
-        #         tdma_system.add_packet_to_node(node_id, f"Packet {i}")
+        #     for i in range(1, 50):
+        #         dtdma_system.add_packet_to_node(node_id, f"Packet {i}")
 
     # Simulate TDMA
 
     # while tdma_system.total_packets >= 0:
+    start_time = time.time()
     dtdma_system.simulate()
-    for node in dtdma_system.nodes:
-        print(node.node_id, node.packet_list)
-    print(dtdma_system.total_packets)
+    end_time = time.time()
+    print(end_time - start_time)
+    print(dtdma_system.packet_send)
+    # for node in dtdma_system.nodes:
+    #     print(node.node_id, node.packet_list)
+    # print(dtdma_system.total_packets)
     efficiency = dtdma_system.total_packets / total_time
     dtdma_system.draw()
+    # print(dtdma_system.time_slot_durations)

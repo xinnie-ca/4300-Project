@@ -78,9 +78,9 @@ class TDMA:
 
 
 if __name__ == "__main__":
-    num_nodes = 10
+    num_nodes = 1000
     total_time = 10  # seconds
-    packet_send_rate = 2  # packets per second
+    packet_send_rate = 200  # packets per second
     tdma_system = TDMA(num_nodes, total_time, packet_send_rate)
 
     # Add packets to nodes
@@ -94,5 +94,9 @@ if __name__ == "__main__":
 
     # Simulate TDMA
     tdma_system.simulate()
+
     efficiency = tdma_system.total_packets / total_time
     tdma_system.draw()
+    print(
+        tdma_system.cumulative_packet_send[len(tdma_system.cumulative_packet_send) - 1]
+    )
