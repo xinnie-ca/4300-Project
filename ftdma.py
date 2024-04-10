@@ -1,5 +1,6 @@
 import time
 import math
+import random
 import threading
 import matplotlib.pyplot as plt
 
@@ -18,20 +19,14 @@ class Node:
         self.packet_list.append(packet)
 
     def send_packets(self, tdma, slot_end_time):
-        # print("Node sendpackets")
         packets_sent = 0
         current_time = time.time()
         while current_time < slot_end_time:
             if len(self.packet_list) != 0:
                 packet = self.packet_list.pop(0)  # Send the first packet in the list
-                # print(
-                #     f"Node {self.node_id} at channel {self.channel_id} sent packet: {packet}"
-                # )
                 packets_sent += 1
                 tdma.cumulative_packets_count(current_time, 1)
-                # tdma.total_packets -= 1
             else:
-                # print("Idle")
                 tdma.cumulative_packets_count(current_time, 0)
 
             time.sleep(1 / self.send_rate)  # Simulate packet transmission time
@@ -104,17 +99,11 @@ class DTDMA:
                 (
                     node,
                     duration,
-                    # min(
-                    #     (len(node.packet_list) / self.total_packets) * total_time,
-                    #     # self.packet_send_rate * len(node.packet_list),
-                    #     len(node.packet_list) / self.packet_send_rate,
-                    # ),
                 )
             )
         # print(self.nodes)
 
     def simulate(self):
-        # print("TDMA simulate")
         self.scheduler()
         slot_start_time = time.time()
         for slot in self.time_slot_durations:
@@ -122,14 +111,8 @@ class DTDMA:
             duration = slot[1]
 
             slot_end_time = slot_start_time + duration
-            # print(f"Time Slot {self.current_slot} duration is: {duration}")
-            # print(slot_end_time)
             # Get the node for the current time slot
             self.packet_send = node.send_packets(self, slot_end_time)
-
-            # print(
-            #     f"Node {node.node_id} at channel {node.channel_id} sent {self.packet_send} packet(s) in this slot."
-            # )
             self.current_slot += 1
             slot_start_time = slot_end_time
 
@@ -159,7 +142,7 @@ class Channel(threading.Thread):
         # self.channel_id += 1
         for node_id in self.nodes_id:
             if node_id % 2 == 0:
-                for i in range(1, 1000):
+                for i in range(random.randint(0, 1000)):
                     self.dtdma.add_packet_to_node(node_id, f"Packet {i}")
             # else:
             #     for i in range(1, 50):
@@ -213,12 +196,14 @@ class FDMA:
             self.throughput += channel.throughput
             x_category.append(channel.channel_id)
             y_value.append(channel.throughput)
-        print(x_category)
+        # print(x_category)
+        print(y_value)
         plt.bar(x_category, y_value)
         plt.xlabel("Channel ID")
         plt.ylabel("Number of Packets send")
         plt.title("Cumulative packets send by Channel")
-        plt.show()
+        # plt.show()
+        plt.savefig("ftdma.png")
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 import time
-
+import random
 import matplotlib.pyplot as plt
 
 
@@ -65,10 +65,16 @@ class DTDMA:
     def draw(self):
 
         plt.plot(self.elapsed_time, self.cumulative_packet_send)
+        plt.annotate(
+            str(self.cumulative_packet_send[-1]),
+            (self.elapsed_time[-1], self.cumulative_packet_send[-1]),
+        )
+        plt.scatter(self.elapsed_time[-1], self.cumulative_packet_send[-1], color="red")
         plt.xlabel("Elapsed Time")
         plt.ylabel("Amount Of Packets")
         plt.title("TDMA Cumulative Packets Send")
-        plt.show()
+        # plt.show()
+        plt.savefig("dtdma.png")
 
     def scheduler(self):
         self.total_packets = sum(len(node.packet_list) for node in self.nodes)
@@ -126,7 +132,7 @@ if __name__ == "__main__":
     # Add packets to nodes
     for node_id in range(num_nodes):
         if node_id % 2 == 0:
-            for i in range(1, 1000):
+            for i in range(random.randint(0, 1000)):
                 dtdma_system.add_packet_to_node(node_id, f"Packet {i}")
         # else:
         #     for i in range(1, 50):
