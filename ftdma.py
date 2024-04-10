@@ -197,7 +197,7 @@ class FDMA:
             x_category.append(channel.channel_id)
             y_value.append(channel.throughput)
         # print(x_category)
-        print(y_value)
+        # print(y_value)
         plt.bar(x_category, y_value)
         plt.xlabel("Channel ID")
         plt.ylabel("Number of Packets send")
