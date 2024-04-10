@@ -135,13 +135,15 @@ class DTDMA:
 
 
 class Channel(threading.Thread):
-    def __init__(self, num_nodes, node_id_per_channel, total_time, packet_send_rate):
+    def __init__(
+        self, num_nodes, node_id_per_channel, total_time, packet_send_rate, channel_id
+    ):
         super().__init__()
         self.num_nodes = num_nodes
         self.nodes_id = node_id_per_channel
         self.total_time = total_time
         self.packet_send_rate = packet_send_rate
-        self.channel_id = 0
+        self.channel_id = channel_id
         self.throughput = 0
 
     # TODO: something wrong with the node_id
@@ -154,7 +156,7 @@ class Channel(threading.Thread):
             self.packet_send_rate,
             self.channel_id,
         )
-        self.channel_id += 1
+        # self.channel_id += 1
         for node_id in self.nodes_id:
             if node_id % 2 == 0:
                 for i in range(1, 1000):
@@ -176,6 +178,7 @@ class FDMA:
 
         num_nodes_per_channel = int(num_nodes / num_channels)
         # print(self.nodes_id)
+        channel_id = 0
         for _ in range(num_channels):
             node_ids_per_channel = []
             for i in range(num_nodes_per_channel):
@@ -191,8 +194,10 @@ class FDMA:
                 node_ids_per_channel,
                 total_time,
                 packet_send_rate,
+                channel_id,
             )
             self.my_channels.append(my_channel)
+            channel_id += 1
 
     def simulate(self):
         # print("FDMA simulate")
@@ -200,9 +205,20 @@ class FDMA:
             channel.start()
         for channel in self.my_channels:
             channel.join()
+
+        x_category = []
+        y_value = []
         for channel in self.my_channels:
             print(channel.throughput)
             self.throughput += channel.throughput
+            x_category.append(channel.channel_id)
+            y_value.append(channel.throughput)
+        print(x_category)
+        plt.bar(x_category, y_value)
+        plt.xlabel("Channel ID")
+        plt.ylabel("Number of Packets send")
+        plt.title("Cumulative packets send by Channel")
+        plt.show()
 
 
 if __name__ == "__main__":
